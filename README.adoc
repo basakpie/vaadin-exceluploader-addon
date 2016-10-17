@@ -25,6 +25,10 @@ image::data/screenshot/excelUploader.png[]
 [source,java,indent=0]
 ----
 final Table table = createTable(userList);
+table.setSizeFull();
+table.setContainerDataSource(new BeanItemContainer<>(User.class));
+table.setVisibleColumns("id", "name","email");
+table.setColumnHeaders("ID", "Name","Email");
 table.setWidth(100, Unit.PERCENTAGE);
 table.setSizeFull();
 
