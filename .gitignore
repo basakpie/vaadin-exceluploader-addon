@@ -36,7 +36,3 @@ hs_err_pid*
 .DS_Store
 *.log
 /.apt_generated/
-
-# Project Test Files #
-**/src/main/webapp/VAADIN/widgetsets
-**/src/main/webapp/VAADIN/themes/**
