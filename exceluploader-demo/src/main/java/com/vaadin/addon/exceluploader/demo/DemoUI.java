@@ -64,8 +64,10 @@ public class DemoUI extends UI {
 			@Override
 			public void uploadFinished(FinishedEvent event) {
 				List<User> users = excelUploader.uploadItems();
-				table.removeAllItems();
-				table.addItems(users);
+				if(users.size()>0) {
+					table.removeAllItems();
+					table.addItems(users);
+				}
 			}
 		});
 		
