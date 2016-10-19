@@ -1,46 +1,75 @@
 package com.vaadin.addon.excel;
 
-import com.vaadin.server.Page;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.Upload;
-import com.vaadin.ui.Upload.SucceededEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.*;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
+import com.vaadin.server.Page;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Upload;
+import com.vaadin.ui.Upload.FinishedEvent;
+import com.vaadin.ui.Upload.SucceededEvent;
 
 /**
  * Created by basakpie on 2016-10-10.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"rawtypes", "unchecked", "unused", "resource"})
 public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Upload.SucceededListener {
 
 	private static final long serialVersionUID = 1L;
 
 	private Ext ext;
-
 	private File file;
 
-	private List<T> items;
-
 	private final Class<? super T> type;
+	private final Map<String, Field> fieldMap;
 
+	private final List<ExcelUploaderSucceededListener<T>> listeners = new ArrayList<ExcelUploaderSucceededListener<T>>();
+	
 	public AbstractExcelUploader(Class<? super T> type) {
 		this.type = type;
+		this.fieldMap = new HashMap<>();
 	}
+	
+	public void addSucceededListener(ExcelUploaderSucceededListener listener) {
+        listeners.add(listener);
+    }
+
+	public void removeSucceededListener(ExcelUploaderSucceededListener listener) {
+        listeners.remove(listener);
+    }
+	
+	private void fireUploadSucceededEvent(Upload.SucceededEvent event, List<T> items) {        
+        if (listeners != null) {
+            for(int i =0; i < listeners.size(); i++) {            	
+				ExcelUploaderSucceededListener listener = listeners.get(i);
+                listener.succeededListener(event, items);
+            }
+        }
+    }
 		
 	@Override
 	public OutputStream receiveUpload(String filename, String mimeType) {		
@@ -50,8 +79,7 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
         	ext = Ext.findByExt(filename.substring(index + 1));
         	if(ext==null) {
         		throw new IOException("allow extenssion *.xls|xlsx"); 			
-    		}
-        	
+    		}        	
         	file = File.createTempFile("temp/uploads/excel/" + Long.toString(System.nanoTime()), filename);
             fos = new FileOutputStream(file);            
         } catch(IOException ex) {
@@ -64,24 +92,24 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 	
 	@Override
 	public void uploadSucceeded(SucceededEvent event) {		
-		try {
+		List<T> items = new ArrayList<>();
+		try {			
+			Class<? extends T> targetClass = (Class<? extends T>) Class.forName(type.getName());
+			registerExcelColumns(targetClass);
 			if(Ext.xls == ext()) {
 				items = readXLSFileToItems(file());
 			} else if(Ext.xlsx == ext()) {
 				items = readXLSXFileToItems(file());
 			}
-		} catch(IOException ex) {			
-        	new Notification("Could not read item<br/>", ex.getMessage(), Notification.Type.ERROR_MESSAGE).show(Page.getCurrent());
-        } finally {
-        	delete(file);
-        }
+			delete(file);
+			fireUploadSucceededEvent(event, items);			
+		} catch(IOException e1) {
+        	new Notification("Could not read item<br/>", e1.getMessage(), Notification.Type.ERROR_MESSAGE).show(Page.getCurrent());
+        } catch (ClassNotFoundException e2) {
+			new Notification("Class Not Found<br/>", e2.getMessage(), Notification.Type.ERROR_MESSAGE).show(Page.getCurrent());
+		}
 	}
-	
-	public List<T> uploadItems() {
-		return this.items;
-	}
-	
-	@SuppressWarnings({"unchecked", "resource"})
+		
 	private List<T> readXLSFileToItems(File file) throws IOException {
 		List<T> result = new ArrayList<>();  
 		try {
@@ -123,7 +151,6 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 		return result;		
 	}
 	
-	@SuppressWarnings({"unchecked", "resource"})
 	private List<T> readXLSXFileToItems(File file) throws IOException {
 		List<T> result = new ArrayList<>();
 		try {
@@ -166,7 +193,6 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 		
 	}
 	
-	@SuppressWarnings({"rawtypes", "unchecked"}) 
 	private Object createItem(List<String> propertyNames, Iterator cells, FormulaEvaluator evaluator) throws IOException {
 		try {
 			DataFormatter df = new DataFormatter(false);
@@ -186,6 +212,9 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 					continue;
 				}
 				Field field = findColumnField(targetClass, columnName);
+				if(field==null) {
+					continue;
+				}
 				field.setAccessible(true);
 				setColumnField(object, field, columnValue);
 				if(field.get(object)!=null) {
@@ -262,6 +291,40 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 			new Notification("delete file<br/>", ex.getMessage(), Notification.Type.ERROR_MESSAGE).show(Page.getCurrent());
 		}
 		
+	}
+
+	protected void registerExcelColumns(Class<?> targetClass) {
+		String className = targetClass.getName();
+		Field[] fields = targetClass.getDeclaredFields();
+		
+		Map<String, Field> defaultFieldMap = new HashMap<>();
+		Map<String, Field> annotaionFieldMap = new HashMap<>();
+		
+		for(Field field : fields) {
+			ExcelColumn annotation = field.getAnnotation(ExcelColumn.class);
+			String key = field.getName();
+			if(annotation!=null) {
+				key = annotation.value();
+				annotaionFieldMap.put(key, field);
+			}
+			defaultFieldMap.put(key, field);
+		}		
+		if(defaultFieldMap.size() > 0 || annotaionFieldMap.size() > 0) {			
+			if(annotaionFieldMap.size() > 0) {
+				this.fieldMap.putAll(annotaionFieldMap);
+			} else {
+				this.fieldMap.putAll(defaultFieldMap);
+			}
+			return;
+		}
+		if(targetClass.getSuperclass() != Object.class) {
+			registerExcelColumns(targetClass.getSuperclass());
+			return;
+		}
+	}
+
+	public Field getFieldMap(String mapKey) {
+		return this.fieldMap.get(mapKey);
 	}
 
 }

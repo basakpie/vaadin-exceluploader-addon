@@ -2,8 +2,6 @@
 
 Excel Uploader is a UI component add-on for Vaadin.
 
-image::data/screenshot/excelUploader.png[]
-
 == Excel Uploader Maven
 
 [source,xml,indent=0]
@@ -20,33 +18,96 @@ image::data/screenshot/excelUploader.png[]
 </repository>
 ----
 
-== Excel Uploader Example Code
+== FieldName Type Excel Uploader Example Code
+
+image::data/screenshot/FieldNameExcelUpload.png[]
 
 [source,java,indent=0]
 ----
-final Table table = createTable(userList);
+public class User  implements Serializable {
+    private Long id;
+    private String email;
+    private String name;
+//....
+
+final Table table = new Table();
 table.setSizeFull();
-table.setContainerDataSource(new BeanItemContainer<>(User.class));
+table.setContainerDataSource(new BeanItemContainer<>(User.class, null));
 table.setVisibleColumns("id", "name","email");
 table.setColumnHeaders("ID", "Name","Email");
-table.setWidth(100, Unit.PERCENTAGE);
-table.setSizeFull();
 
 final ExcelUploader<User> excelUploader = new ExcelUploader<>(User.class);
+excelUploader.addSucceededListener(new ExcelUploaderSucceededListener<User>() {
+    @Override
+    public void succeededListener(SucceededEvent event, List<User> items) {
+        if(items.size()>0) {
+            table.removeAllItems();
+            table.addItems(items);
+        }
+    }
+});
 
 final Upload upload = new Upload();
 upload.setImmediate(true);
-upload.setReceiver(excelUploader);
 upload.setButtonCaption("Upload");
+upload.setReceiver(excelUploader);
 upload.addSucceededListener(excelUploader);
-upload.addFinishedListener(new FinishedListener() {			
+----
+
+== Annotation Type Excel Uploader Example Code
+
+image::data/screenshot/AnnotationExcelUpload.png[]
+
+[source,java,indent=0]
+----
+public class UserEx implements Serializable {
+    @ExcelColumn("아이디")
+    private Long id;
+    
+    @ExcelColumn("이메일")
+    private String email;
+    
+    @ExcelColumn("이름")
+    private String name;
+//....
+
+final Table table = new Table();
+table.setSizeFull();
+table.setContainerDataSource(new BeanItemContainer<>(UserEx.class, null));
+table.setVisibleColumns("id", "name","email");
+table.setColumnHeaders("아이디", "이름","이메일");
+		
+final ExcelUploader<UserEx> excelUploader = new ExcelUploader<>(UserEx.class);
+excelUploader.addSucceededListener(new ExcelUploaderSucceededListener<UserEx>() {
     @Override
-    public void uploadFinished(FinishedEvent event) {
-        List<User> users = excelUploader.uploadItems();
-        table.removeAllItems();
-        table.addItems(users);
-    }
+    public void succeededListener(SucceededEvent event, List<UserEx> items) {
+        if(items.size()>0) {
+            table.removeAllItems();
+            table.addItems(items);
+       }
+   }
 });
+		
+final Upload upload = new Upload();
+upload.setImmediate(true);
+upload.setButtonCaption("Upload");
+upload.setReceiver(excelUploader);
+upload.addSucceededListener(excelUploader);
+----
+
+== AbstractExcelUploader Extension
+
+[source,java,indent=0]
+----
+public class ExcelUploader<T> extends AbstractExcelUploader {
+
+    @Override
+    protected Field findColumnField(Class targetClass, String columnName) throws NoSuchFieldException { }
+    
+    @Override
+    protected void setColumnField(Object object, Field field, String columnValue) throws IllegalAccessException { }
+    
+}
 ----
 
 ## Building and running demo
