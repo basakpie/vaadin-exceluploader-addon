@@ -5,7 +5,7 @@
 	<groupId>com.vaadin.addon</groupId>
 	<artifactId>exceluploader-demo</artifactId>
 	<packaging>war</packaging>
-	<version>0.0.2</version>
+	<version>0.0.3</version>
 	<name>ExcelUploader Add-on Demo</name>
 
 	<prerequisites>
