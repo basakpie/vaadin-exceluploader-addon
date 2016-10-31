@@ -1,17 +1,10 @@
 package com.vaadin.addon.excel;
 
-import com.vaadin.server.Page;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinSession;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.Upload;
-import com.vaadin.util.CurrentInstance;
-import org.junit.Before;
+import org.junit.AfterClass;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import java.io.*;
-import java.lang.reflect.Field;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -22,14 +15,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestExcelUploader {
 
-    File fieldXls;
-    File fieldXlsx;
+    final File fieldXls;
+    final File fieldXlsx;
 
-    File annotationXls;
-    File annotationXlsx;
+    final File annotationXls;
+    final File annotationXlsx;
 
-    @Before
-    public void setUp() throws Exception {
+    public TestExcelUploader() throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
         fieldXls = new File(classLoader.getResource("field_upload.xls").getFile());
         fieldXlsx = new File(classLoader.getResource("field_upload.xlsx").getFile());
@@ -105,20 +97,26 @@ public class TestExcelUploader {
         filewrite(excelUploader, annotationXlsx);
     }
 
-    private void filewrite(ExcelUploader<?> excelUploader, File file) throws IOException {
+    private void filewrite(ExcelUploader<?> excelUploader, File file) {
         InputStream inputStream = null;
         OutputStream outputStream = null;
         try {
             inputStream = new FileInputStream(file);
             outputStream = excelUploader.receiveUpload(file.getName(), "application/vnd.ms-excel");
             int data = 0;
-            while((data=inputStream.read())!=-1) {
+            while ((data = inputStream.read()) != -1) {
                 outputStream.write(data);
             }
             excelUploader.uploadSucceeded(null);
+        } catch (Exception e) {
         } finally {
-            inputStream.close();
-            outputStream.close();
+            try {
+                inputStream.close();
+                outputStream.close();
+                excelUploader.file().delete();
+            } catch (Exception e) {
+            }
+
         }
     }
 
