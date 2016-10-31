@@ -1,37 +1,22 @@
 package com.vaadin.addon.excel;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import com.vaadin.server.Page;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Upload;
+import com.vaadin.ui.Upload.SucceededEvent;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.vaadin.server.Page;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.Upload;
-import com.vaadin.ui.Upload.FinishedEvent;
-import com.vaadin.ui.Upload.SucceededEvent;
+import java.io.*;
+import java.lang.reflect.Field;
+import java.util.*;
 
 /**
  * Created by basakpie on 2016-10-10.
@@ -110,7 +95,7 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 		}
 	}
 		
-	private List<T> readXLSFileToItems(File file) throws IOException {
+	protected List<T> readXLSFileToItems(File file) throws IOException {
 		List<T> result = new ArrayList<>();  
 		try {
 			FileInputStream fileInputStream = new FileInputStream(file);			
@@ -150,8 +135,8 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 		}
 		return result;		
 	}
-	
-	private List<T> readXLSXFileToItems(File file) throws IOException {
+
+	protected List<T> readXLSXFileToItems(File file) throws IOException {
 		List<T> result = new ArrayList<>();
 		try {
 			FileInputStream fileInputStream = new FileInputStream(file);			
@@ -228,7 +213,7 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 		}
 	}
 
-	private void setColumnFieldType(Object object, Field field, String columnValue) throws IllegalAccessException {
+	protected void setColumnFieldType(Object object, Field field, String columnValue) throws IllegalAccessException {
 		Class<?> fieldType = field.getType();
 		if (fieldType.equals(String.class)) {
             field.set(object, columnValue);
@@ -256,7 +241,7 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 	protected void setColumnField(Object object, Field field, String columnValue) throws IllegalAccessException {
 	}
 
-	private File file() {
+	protected File file() {
 		return this.file;
 	}
 	
@@ -264,7 +249,7 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 		return this.ext;
 	}
 	
-	private enum Ext {
+	public enum Ext {
 		xls,
 		xlsx;	
 		
@@ -279,18 +264,12 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 
 	private void delete(File file) {
 		try {
-			boolean filePresent = file.exists();
-			if(!file.delete()) {
-				if(!filePresent) {
-					throw new FileNotFoundException("File does not exits:" + file);
-				}
-				String message = "Unable to delete file: " + file;
-				throw new IOException(message);
+			if(file.isFile()) {
+				file.delete();
 			}
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			new Notification("delete file<br/>", ex.getMessage(), Notification.Type.ERROR_MESSAGE).show(Page.getCurrent());
 		}
-		
 	}
 
 	protected void registerExcelColumns(Class<?> targetClass) {
