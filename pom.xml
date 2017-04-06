@@ -5,12 +5,24 @@
 	<groupId>com.vaadin.addon</groupId>
 	<artifactId>exceluploader-root</artifactId>
 	<packaging>pom</packaging>
-	<version>0.1.0</version>
+	<version>8.0.5</version>
 	<name>Excel Uploader Add-on Root Project</name>
 
 	<prerequisites>
-		<maven>3</maven>
+		<maven>3.0</maven>
 	</prerequisites>
+
+	<properties>
+		<vaadin.version>8.0.5</vaadin.version>
+		<vaadin.plugin.version>8.0.5</vaadin.plugin.version>
+		<jetty.plugin.version>9.3.9.v20160517</jetty.plugin.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<!-- If addon submodule is not used, this can also be "fetch" or "cdn" -->
+		<vaadin.widgetset.mode>local</vaadin.widgetset.mode>
+	</properties>
+
 
 	<modules>
 		<module>exceluploader-addon</module>

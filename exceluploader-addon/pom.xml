@@ -5,21 +5,21 @@
 	<groupId>com.vaadin.addon</groupId>
 	<artifactId>excel-uploader</artifactId>
 	<packaging>jar</packaging>
-	<version>0.1.0</version>
+	<version>8.0.5</version>
 	<name>Excel Uploader</name>
 
 	<prerequisites>
-		<maven>3</maven>
+		<maven>3.0</maven>
 	</prerequisites>
 
 	<properties>
+		<vaadin.version>8.0.5</vaadin.version>
+		<vaadin.plugin.version>8.0.5</vaadin.plugin.version>
+		<jetty.plugin.version>9.3.9.v20160517</jetty.plugin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<vaadin.version>7.7.3</vaadin.version>
-		<vaadin.plugin.version>7.7.3</vaadin.plugin.version>
 		<apache.poi.version>3.15</apache.poi.version>
-		
 		<!-- ZIP Manifest fields -->
 		<Implementation-Version>${project.version}</Implementation-Version>
 		<!-- Must not change this because of the Directory -->

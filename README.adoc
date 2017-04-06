@@ -30,25 +30,20 @@ public class User  implements Serializable {
     private String name;
 //....
 
-final Table table = new Table();
-table.setSizeFull();
-table.setContainerDataSource(new BeanItemContainer<>(User.class, null));
-table.setVisibleColumns("id", "name","email");
-table.setColumnHeaders("ID", "Name","Email");
+final Grid<User> grid = new Grid<>();
+grid.setSizeFull();
+grid.addColumn(User::getId).setCaption("ID");
+grid.addColumn(User::getName).setCaption("Name");
+grid.addColumn(User::getEmail).setCaption("Email");
 
 final ExcelUploader<User> excelUploader = new ExcelUploader<>(User.class);
-excelUploader.addSucceededListener(new ExcelUploaderSucceededListener<User>() {
-    @Override
-    public void succeededListener(SucceededEvent event, List<User> items) {
-        if(items.size()>0) {
-            table.removeAllItems();
-            table.addItems(items);
-        }
+excelUploader.addSucceededListener((event, items) -> {
+    if(items.size()>0) {
+        grid.setItems(items);
     }
 });
 
 final Upload upload = new Upload();
-upload.setImmediate(true);
 upload.setButtonCaption("Upload");
 upload.setReceiver(excelUploader);
 upload.addSucceededListener(excelUploader);
@@ -71,25 +66,20 @@ public class UserEx implements Serializable {
     private String name;
 //....
 
-final Table table = new Table();
-table.setSizeFull();
-table.setContainerDataSource(new BeanItemContainer<>(UserEx.class, null));
-table.setVisibleColumns("id", "name","email");
-table.setColumnHeaders("아이디", "이름","이메일");
-		
+final Grid<UserEx> grid = new Grid<>();
+grid.setSizeFull();
+grid.addColumn(UserEx::getId).setCaption("ID");
+grid.addColumn(UserEx::getName).setCaption("Name");
+grid.addColumn(UserEx::getEmail).setCaption("Email");
+
 final ExcelUploader<UserEx> excelUploader = new ExcelUploader<>(UserEx.class);
-excelUploader.addSucceededListener(new ExcelUploaderSucceededListener<UserEx>() {
-    @Override
-    public void succeededListener(SucceededEvent event, List<UserEx> items) {
-        if(items.size()>0) {
-            table.removeAllItems();
-            table.addItems(items);
-       }
-   }
+excelUploader.addSucceededListener((event, items) -> {
+    if(items.size()>0) {
+        grid.setItems(items);
+    }
 });
-		
+
 final Upload upload = new Upload();
-upload.setImmediate(true);
 upload.setButtonCaption("Upload");
 upload.setReceiver(excelUploader);
 upload.addSucceededListener(excelUploader);

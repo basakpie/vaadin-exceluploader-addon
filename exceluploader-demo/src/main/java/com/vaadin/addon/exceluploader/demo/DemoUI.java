@@ -11,24 +11,17 @@ import com.vaadin.addon.excel.ExcelUploader;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.annotations.Widgetset;
 import com.vaadin.server.FileResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Link;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.Table;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.Upload;
+import com.vaadin.ui.*;
 import com.vaadin.ui.Upload.SucceededEvent;
-import com.vaadin.ui.VerticalLayout;
 
 @Theme("demo")
 @Title("ExcelUploader Add-on Demo")
+@Widgetset("com.vaadin.addon.DemoWidgetSet")
 @SuppressWarnings("serial")
 public class DemoUI extends UI {
 	
@@ -48,31 +41,27 @@ public class DemoUI extends UI {
         setContent(tabSheet);        
     }
 
+    @SuppressWarnings("unchecked")
 	private Component field_matching() {
 				
 		String basepath = VaadinService.getCurrent().getBaseDirectory().getAbsolutePath();		
-		Link xlsLink = new Link("xls test file", new FileResource(Paths.get(basepath + "/temp/field_upload.xls").toFile()));
-		Link xlsxLink = new Link("xlsx test file", new FileResource(Paths.get(basepath + "/temp/field_upload.xlsx").toFile()));
+		Link xlsLink = new Link("field test file.xls", new FileResource(Paths.get(basepath + "/temp/field_upload.xls").toFile()));
+		Link xlsxLink = new Link("field test file.xlsx", new FileResource(Paths.get(basepath + "/temp/field_upload.xlsx").toFile()));
 		
-		final Table table = new Table();
-		table.setSizeFull();
-        table.setContainerDataSource(new BeanItemContainer<>(User.class, null));
-        table.setVisibleColumns("id", "name","email");
-        table.setColumnHeaders("ID", "Name","Email");
+		final Grid<User> grid = new Grid<>();
+		grid.setSizeFull();
+        grid.addColumn(User::getId).setCaption("ID");
+		grid.addColumn(User::getName).setCaption("Name");
+		grid.addColumn(User::getEmail).setCaption("Email");
 		
 		final ExcelUploader<User> excelUploader = new ExcelUploader<>(User.class);
-		excelUploader.addSucceededListener(new ExcelUploaderSucceededListener<User>() {
-			@Override
-			public void succeededListener(SucceededEvent event, List<User> items) {
-				if(items.size()>0) {
-                    table.removeAllItems();
-                    table.addItems(items);
-                }
+		excelUploader.addSucceededListener((event, items) -> {
+			if(items.size()>0) {
+				grid.setItems(items);
 			}
-		});
+        });
 		
 		final Upload upload = new Upload();
-		upload.setImmediate(true);
 		upload.setButtonCaption("Upload");
 		upload.setReceiver(excelUploader);
 		upload.addSucceededListener(excelUploader);
@@ -84,37 +73,33 @@ public class DemoUI extends UI {
         VerticalLayout rootlayout = new VerticalLayout();
         rootlayout.setSpacing(true);
         rootlayout.setSizeFull();
-        rootlayout.addComponents(buttonLayout, table);
+        rootlayout.addComponents(buttonLayout, grid);
         rootlayout.setComponentAlignment(buttonLayout, Alignment.MIDDLE_RIGHT);
-        rootlayout.setExpandRatio(table, 1f);
+        rootlayout.setExpandRatio(grid, 1f);
 		return rootlayout;
 	}
 	
+    @SuppressWarnings("unchecked")
 	private Component annotation_matching() {
 		
 		String basepath = VaadinService.getCurrent().getBaseDirectory().getAbsolutePath();		
-		Link xlsLink = new Link("xls test file", new FileResource(Paths.get(basepath + "/temp/annotation_upload.xls").toFile()));
-		Link xlsxLink = new Link("xlsx test file", new FileResource(Paths.get(basepath + "/temp/annotation_upload.xlsx").toFile()));
-		
-		final Table table = new Table();
-		table.setSizeFull();
-        table.setContainerDataSource(new BeanItemContainer<>(UserEx.class, null));
-        table.setVisibleColumns("id", "name","email");
-        table.setColumnHeaders("아이디", "이름","이메일");
+		Link xlsLink = new Link("annotation test file.xls", new FileResource(Paths.get(basepath + "/temp/annotation_upload.xls").toFile()));
+		Link xlsxLink = new Link("annotation test file.xlsx", new FileResource(Paths.get(basepath + "/temp/annotation_upload.xlsx").toFile()));
+
+		final Grid<UserEx> grid = new Grid<>();
+		grid.setSizeFull();
+        grid.addColumn(UserEx::getId).setCaption("ID");
+		grid.addColumn(UserEx::getName).setCaption("Name");
+		grid.addColumn(UserEx::getEmail).setCaption("Email");
 		
 		final ExcelUploader<UserEx> excelUploader = new ExcelUploader<>(UserEx.class);
-		excelUploader.addSucceededListener(new ExcelUploaderSucceededListener<UserEx>() {
-			@Override
-			public void succeededListener(SucceededEvent event, List<UserEx> items) {
-				if(items.size()>0) {
-                    table.removeAllItems();
-                    table.addItems(items);
-                }
+		excelUploader.addSucceededListener((event, items) -> {
+			if(items.size()>0) {
+				grid.setItems(items);
 			}
-		});
+        });
 		
 		final Upload upload = new Upload();
-		upload.setImmediate(true);
 		upload.setButtonCaption("Upload");
 		upload.setReceiver(excelUploader);
 		upload.addSucceededListener(excelUploader);
@@ -126,9 +111,9 @@ public class DemoUI extends UI {
         VerticalLayout rootlayout = new VerticalLayout();
         rootlayout.setSpacing(true);
         rootlayout.setSizeFull();
-        rootlayout.addComponents(buttonLayout, table);
+        rootlayout.addComponents(buttonLayout, grid);
         rootlayout.setComponentAlignment(buttonLayout, Alignment.MIDDLE_RIGHT);
-        rootlayout.setExpandRatio(table, 1f);
+        rootlayout.setExpandRatio(grid, 1f);
 		return rootlayout;
 	}
 		
@@ -144,6 +129,5 @@ public class DemoUI extends UI {
             userList.add(user);
         }
     }
-
     
 }
