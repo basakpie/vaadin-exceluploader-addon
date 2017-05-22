@@ -39,4 +39,5 @@
 *.so            binary
 *.war           binary
 
-exceluploader-demo/src/main/webapp/* linguist-vendored
+
+exceluploader-demo/src/main/webapp/VAADIN/themes/demo/* linguist-vendored
