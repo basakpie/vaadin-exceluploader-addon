@@ -5,7 +5,7 @@
 	<groupId>com.vaadin.addon</groupId>
 	<artifactId>exceluploader-demo</artifactId>
 	<packaging>war</packaging>
-	<version>8.0.5</version>
+	<version>8.1.0</version>
 	<name>ExcelUploader Add-on Demo</name>
 
 	<prerequisites>
@@ -117,15 +117,12 @@
 				<artifactId>vaadin-maven-plugin</artifactId>
 				<version>${vaadin.plugin.version}</version>
 				<executions>
-					<!-- You are free to mark this as permanently ignored in Eclipse -->
 					<execution>
-						<configuration>
-							<!-- if you don't specify any modules, the plugin will find them -->
-						</configuration>
 						<goals>
-							<goal>resources</goal>
 							<goal>update-widgetset</goal>
 							<goal>compile</goal>
+							<goal>update-theme</goal>
+							<goal>compile-theme</goal>
 						</goals>
 					</execution>
 				</executions>

@@ -1,7 +1,6 @@
 package com.vaadin.addon.excel;
 
 import com.vaadin.ui.Upload;
-import org.junit.AfterClass;
 import org.junit.Test;
 
 import java.io.*;
@@ -47,6 +46,25 @@ public class TestExcelUploader {
     }
 
     @Test
+    public void testFieldXlsUploadOption() throws IOException {
+        ExcelUploader<TestBean> excelUploader = new ExcelUploader<>(TestBean.class);
+        excelUploader.setSheetAt(1);
+        excelUploader.setFirstRow(2);
+        excelUploader.addSucceededListener(new ExcelUploaderSucceededListener() {
+            @Override
+            public void succeededListener(Upload.SucceededEvent event, List items) {
+                System.out.println("testFieldXlsUploadOption = [" + event + "], items = [" + items + "]");
+                assertTrue("item size", items.size()==13);
+                TestBean bean = (TestBean)items.get(0);
+                assertTrue("item[0] id: ", bean.getId()==1L);
+                assertEquals("item[0] name: ", bean.getName(), "1_option_name_xls");
+                assertEquals("item[0] email: ", bean.getEmail(), "1_option_xls@email.com");
+            }
+        });
+        filewrite(excelUploader, fieldXls);
+    }
+
+    @Test
     public void testFieldXlsxUpload() throws IOException {
         ExcelUploader<TestBean> excelUploader = new ExcelUploader<>(TestBean.class);
         excelUploader.addSucceededListener(new ExcelUploaderSucceededListener() {
@@ -58,6 +76,25 @@ public class TestExcelUploader {
                 assertTrue("item[0] id: ", bean.getId()==1L);
                 assertEquals("item[0] name: ", bean.getName(), "1_name_xlsx");
                 assertEquals("item[0] email: ", bean.getEmail(), "1_xlsx@email.com");
+            }
+        });
+        filewrite(excelUploader, fieldXlsx);
+    }
+
+    @Test
+    public void testFieldXlsxUploadOption() throws IOException {
+        ExcelUploader<TestBean> excelUploader = new ExcelUploader<>(TestBean.class);
+        excelUploader.setSheetName("Sheet2");
+        excelUploader.setFirstRow(2);
+        excelUploader.addSucceededListener(new ExcelUploaderSucceededListener() {
+            @Override
+            public void succeededListener(Upload.SucceededEvent event, List items) {
+                System.out.println("testFieldXlsxUploadOption = [" + event + "], items = [" + items + "]");
+                assertTrue("item size", items.size()==10);
+                TestBean bean = (TestBean)items.get(0);
+                assertTrue("item[0] id: ", bean.getId()==1L);
+                assertEquals("item[0] name: ", bean.getName(), "1_option_name_xlsx");
+                assertEquals("item[0] email: ", bean.getEmail(), "1_option_xlsx@email.com");
             }
         });
         filewrite(excelUploader, fieldXlsx);
@@ -81,6 +118,25 @@ public class TestExcelUploader {
     }
 
     @Test
+    public void testAnnotaionXlsUploadOption() throws IOException {
+        ExcelUploader<TestBeanAnno> excelUploader = new ExcelUploader<>(TestBeanAnno.class);
+        excelUploader.setSheetAt(1);
+        excelUploader.setFirstRow(2);
+        excelUploader.addSucceededListener(new ExcelUploaderSucceededListener() {
+            @Override
+            public void succeededListener(Upload.SucceededEvent event, List items) {
+                System.out.println("testAnnotaionXlsUploadOption = [" + event + "], items = [" + items + "]");
+                assertTrue("item size", items.size()==13);
+                TestBeanAnno bean = (TestBeanAnno)items.get(0);
+                assertTrue("item[0] id: ", bean.getId()==1L);
+                assertEquals("item[0] name: ", bean.getName(), "1_option_name_xls");
+                assertEquals("item[0] email: ", bean.getEmail(), "1_option_xls@email.com");
+            }
+        });
+        filewrite(excelUploader, annotationXls);
+    }
+
+    @Test
     public void testAnnotaionXlsxUpload() throws IOException {
         ExcelUploader<TestBeanAnno> excelUploader = new ExcelUploader<>(TestBeanAnno.class);
         excelUploader.addSucceededListener(new ExcelUploaderSucceededListener() {
@@ -92,6 +148,25 @@ public class TestExcelUploader {
                 assertTrue("item[0] id: ", bean.getId()==1L);
                 assertEquals("item[0] name: ", bean.getName(), "1_name_xlsx");
                 assertEquals("item[0] email: ", bean.getEmail(), "1_xlsx@email.com");
+            }
+        });
+        filewrite(excelUploader, annotationXlsx);
+    }
+
+    @Test
+    public void testAnnotaionXlsxUploadOption() throws IOException {
+        ExcelUploader<TestBeanAnno> excelUploader = new ExcelUploader<>(TestBeanAnno.class);
+        excelUploader.setSheetName("Sheet2");
+        excelUploader.setFirstRow(2);
+        excelUploader.addSucceededListener(new ExcelUploaderSucceededListener() {
+            @Override
+            public void succeededListener(Upload.SucceededEvent event, List items) {
+                System.out.println("testAnnotaionXlsxUploadOption = [" + event + "], items = [" + items + "]");
+                assertTrue("item size", items.size()==8);
+                TestBeanAnno bean = (TestBeanAnno)items.get(0);
+                assertTrue("item[0] id: ", bean.getId()==1L);
+                assertEquals("item[0] name: ", bean.getName(), "1_option_name_xlsx");
+                assertEquals("item[0] email: ", bean.getEmail(), "1_option_xlsx@email.com");
             }
         });
         filewrite(excelUploader, annotationXlsx);

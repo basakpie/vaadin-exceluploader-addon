@@ -32,6 +32,35 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 	private final Class<? super T> type;
 	private final Map<String, Field> fieldMap;
 
+	private int firstRow;
+
+	private int sheetAt;
+
+	private String sheetName = "";
+
+	public void setSheetAt(int index) {
+		if(!sheetName.equals("")) {
+			throw new IllegalArgumentException("already defined sheetName (" + sheetName + ")");
+		} else if(index<0) {
+			throw new IllegalArgumentException("index cannot be negative.");
+		}
+		this.sheetAt = index;
+	}
+
+	public void setSheetName(String name) {
+		if(sheetAt!=0) {
+			throw new IllegalArgumentException("already defined sheetAt (" + sheetAt + ")");
+		}
+		this.sheetName = name;
+	}
+
+	public void setFirstRow(int row) {
+		if(row<0) {
+			throw new IllegalArgumentException("row cannot be negative.");
+		}
+		this.firstRow = row;
+	}
+
 	private final List<ExcelUploaderSucceededListener<T>> listeners = new ArrayList<ExcelUploaderSucceededListener<T>>();
 	
 	public AbstractExcelUploader(Class<? super T> type) {
@@ -101,18 +130,28 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 			FileInputStream fileInputStream = new FileInputStream(file);			
 			
 			HSSFWorkbook wb = new HSSFWorkbook(fileInputStream);
-			
 			HSSFSheet sheet = wb.getSheetAt(0);
-			HSSFRow row;
-			
+
+			if(sheetAt>0) {
+				sheet = wb.getSheetAt(sheetAt);
+			} else if(!sheetName.equals("")) {
+				sheet = wb.getSheet(sheetName);
+			};
+
 			Iterator<Row> rows = sheet.rowIterator();
 			List<String> propertyNames = new ArrayList<>();
-			
+
+			HSSFRow row;
+
 			while(rows.hasNext()) {
 				row = (HSSFRow) rows.next();
 				int rowIdx = row.getRowNum();
-				
-				if(rowIdx==0) {
+
+				if(rowIdx < firstRow) {
+					continue;
+				}
+
+				if(rowIdx==firstRow) {
 					Iterator<Cell> cells = row.cellIterator();
 					while(cells.hasNext()) {
 						HSSFCell cell = (HSSFCell)cells.next();
@@ -142,18 +181,29 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 			FileInputStream fileInputStream = new FileInputStream(file);			
 			
 			XSSFWorkbook wb = new XSSFWorkbook(fileInputStream);
-			
+
 			XSSFSheet sheet = wb.getSheetAt(0);
-			XSSFRow row;
-			
+
+			if(sheetAt>0) {
+				sheet = wb.getSheetAt(sheetAt);
+			} else if(!sheetName.equals("")) {
+				sheet = wb.getSheet(sheetName);
+			};
+
 			Iterator<Row> rows = sheet.rowIterator();
 			List<String> propertyNames = new ArrayList<>();
-			
+
+			XSSFRow row;
+
 			while(rows.hasNext()) {
 				row = (XSSFRow) rows.next();
 				int rowIdx = row.getRowNum();
-				
-				if(rowIdx==0) {
+
+				if(rowIdx < firstRow) {
+					continue;
+				}
+
+				if(rowIdx==firstRow) {
 					Iterator<Cell> cells = row.cellIterator();
 					while(cells.hasNext()) {
 						XSSFCell cell = (XSSFCell)cells.next();

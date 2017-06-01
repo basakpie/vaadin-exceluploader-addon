@@ -1,12 +1,5 @@
 package com.vaadin.addon.exceluploader.demo;
 
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.annotation.WebServlet;
-
-import com.vaadin.addon.excel.ExcelUploaderSucceededListener;
 import com.vaadin.addon.excel.ExcelUploader;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
@@ -17,7 +10,11 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.*;
-import com.vaadin.ui.Upload.SucceededEvent;
+
+import javax.servlet.annotation.WebServlet;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 @Theme("demo")
 @Title("ExcelUploader Add-on Demo")
@@ -55,6 +52,8 @@ public class DemoUI extends UI {
 		grid.addColumn(User::getEmail).setCaption("Email");
 		
 		final ExcelUploader<User> excelUploader = new ExcelUploader<>(User.class);
+//		excelUploader.setFirstRow(2);
+//		excelUploader.setSheetName("Sheet2");
 		excelUploader.addSucceededListener((event, items) -> {
 			if(items.size()>0) {
 				grid.setItems(items);
@@ -93,6 +92,8 @@ public class DemoUI extends UI {
 		grid.addColumn(UserEx::getEmail).setCaption("Email");
 		
 		final ExcelUploader<UserEx> excelUploader = new ExcelUploader<>(UserEx.class);
+//		excelUploader.setFirstRow(2);
+//		excelUploader.setSheetAt(1);
 		excelUploader.addSucceededListener((event, items) -> {
 			if(items.size()>0) {
 				grid.setItems(items);

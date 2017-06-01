@@ -5,7 +5,7 @@
 	<groupId>com.vaadin.addon</groupId>
 	<artifactId>exceluploader-root</artifactId>
 	<packaging>pom</packaging>
-	<version>8.0.5</version>
+	<version>8.1.0</version>
 	<name>Excel Uploader Add-on Root Project</name>
 
 	<prerequisites>
