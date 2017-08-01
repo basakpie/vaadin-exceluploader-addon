@@ -63,6 +63,26 @@ public class TestExcelUploader {
         });
         filewrite(excelUploader, fieldXls);
     }
+    
+    @Test
+    public void testFieldXlsUploadOptionSkipEmptyLines() throws IOException {
+    	ExcelUploader<TestBean> excelUploader = new ExcelUploader<>(TestBean.class);
+    	excelUploader.setSheetAt(1);
+    	excelUploader.setFirstRow(2);
+    	excelUploader.setSkipEmptyRows(true);
+    	excelUploader.addSucceededListener(new ExcelUploaderSucceededListener() {
+    		@Override
+    		public void succeededListener(Upload.SucceededEvent event, List items) {
+    			System.out.println("testFieldXlsUploadOption = [" + event + "], items = [" + items + "]");
+    			assertTrue("item size", items.size()==11);
+    			TestBean bean = (TestBean)items.get(0);
+    			assertTrue("item[0] id: ", bean.getId()==1L);
+    			assertEquals("item[0] name: ", bean.getName(), "1_option_name_xls");
+    			assertEquals("item[0] email: ", bean.getEmail(), "1_option_xls@email.com");
+    		}
+    	});
+    	filewrite(excelUploader, fieldXls);
+    }
 
     @Test
     public void testFieldXlsxUpload() throws IOException {
@@ -98,6 +118,26 @@ public class TestExcelUploader {
             }
         });
         filewrite(excelUploader, fieldXlsx);
+    }
+    
+    @Test
+    public void testFieldXlsxUploadOptionSkipEmptyLines() throws IOException {
+    	ExcelUploader<TestBean> excelUploader = new ExcelUploader<>(TestBean.class);
+    	excelUploader.setSheetName("Sheet2");
+    	excelUploader.setFirstRow(2);
+    	excelUploader.setSkipEmptyRows(true);
+    	excelUploader.addSucceededListener(new ExcelUploaderSucceededListener() {
+    		@Override
+    		public void succeededListener(Upload.SucceededEvent event, List items) {
+    			System.out.println("testFieldXlsxUploadOption = [" + event + "], items = [" + items + "]");
+    			assertTrue("item size", items.size()==8);
+    			TestBean bean = (TestBean)items.get(0);
+    			assertTrue("item[0] id: ", bean.getId()==1L);
+    			assertEquals("item[0] name: ", bean.getName(), "1_option_name_xlsx");
+    			assertEquals("item[0] email: ", bean.getEmail(), "1_option_xlsx@email.com");
+    		}
+    	});
+    	filewrite(excelUploader, fieldXlsx);
     }
 
     @Test
@@ -135,6 +175,26 @@ public class TestExcelUploader {
         });
         filewrite(excelUploader, annotationXls);
     }
+    
+    @Test
+    public void testAnnotaionXlsUploadOptionSkipEmptyRows() throws IOException {
+    	ExcelUploader<TestBeanAnno> excelUploader = new ExcelUploader<>(TestBeanAnno.class);
+    	excelUploader.setSheetAt(1);
+    	excelUploader.setFirstRow(2);
+    	excelUploader.setSkipEmptyRows(true);
+    	excelUploader.addSucceededListener(new ExcelUploaderSucceededListener() {
+    		@Override
+    		public void succeededListener(Upload.SucceededEvent event, List items) {
+    			System.out.println("testAnnotaionXlsUploadOption = [" + event + "], items = [" + items + "]");
+    			assertTrue("item size", items.size()==11);
+    			TestBeanAnno bean = (TestBeanAnno)items.get(0);
+    			assertTrue("item[0] id: ", bean.getId()==1L);
+    			assertEquals("item[0] name: ", bean.getName(), "1_option_name_xls");
+    			assertEquals("item[0] email: ", bean.getEmail(), "1_option_xls@email.com");
+    		}
+    	});
+    	filewrite(excelUploader, annotationXls);
+    }
 
     @Test
     public void testAnnotaionXlsxUpload() throws IOException {
@@ -170,6 +230,26 @@ public class TestExcelUploader {
             }
         });
         filewrite(excelUploader, annotationXlsx);
+    }
+    
+    @Test
+    public void testAnnotaionXlsxUploadOptionSkipEmptyRows() throws IOException {
+    	ExcelUploader<TestBeanAnno> excelUploader = new ExcelUploader<>(TestBeanAnno.class);
+    	excelUploader.setSheetName("Sheet2");
+    	excelUploader.setFirstRow(2);
+    	excelUploader.setSkipEmptyRows(true);
+    	excelUploader.addSucceededListener(new ExcelUploaderSucceededListener() {
+    		@Override
+    		public void succeededListener(Upload.SucceededEvent event, List items) {
+    			System.out.println("testAnnotaionXlsxUploadOption = [" + event + "], items = [" + items + "]");
+    			assertTrue("item size", items.size()==6);
+    			TestBeanAnno bean = (TestBeanAnno)items.get(0);
+    			assertTrue("item[0] id: ", bean.getId()==1L);
+    			assertEquals("item[0] name: ", bean.getName(), "1_option_name_xlsx");
+    			assertEquals("item[0] email: ", bean.getEmail(), "1_option_xlsx@email.com");
+    		}
+    	});
+    	filewrite(excelUploader, annotationXlsx);
     }
 
     private void filewrite(ExcelUploader<?> excelUploader, File file) {

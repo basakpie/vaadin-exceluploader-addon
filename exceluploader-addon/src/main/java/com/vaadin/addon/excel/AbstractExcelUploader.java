@@ -38,6 +38,8 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 
 	private String sheetName = "";
 
+	private boolean skipEmptyRows = false;
+
 	public void setSheetAt(int index) {
 		if(!sheetName.equals("")) {
 			throw new IllegalArgumentException("already defined sheetName (" + sheetName + ")");
@@ -59,6 +61,10 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 			throw new IllegalArgumentException("row cannot be negative.");
 		}
 		this.firstRow = row;
+	}
+
+	public void setSkipEmptyRows(boolean skipEmptyRows) {
+		this.skipEmptyRows = skipEmptyRows;
 	}
 
 	private final List<ExcelUploaderSucceededListener<T>> listeners = new ArrayList<ExcelUploaderSucceededListener<T>>();
@@ -158,7 +164,7 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 						int columnIdx = cell.getColumnIndex();
 						propertyNames.add(columnIdx, cell.getStringCellValue());
 					}
-				} else {
+				} else if (!skipEmptyRows || row.getPhysicalNumberOfCells() > 0) {
 					CreationHelper helper = row.getSheet().getWorkbook().getCreationHelper();
 					FormulaEvaluator evaluator = helper.createFormulaEvaluator();
 					Iterator<Cell> cells = row.cellIterator();					
@@ -210,7 +216,7 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 						int columnIdx = cell.getColumnIndex();
 						propertyNames.add(columnIdx, cell.getStringCellValue());
 					}
-				} else {
+				} else if (!skipEmptyRows || row.getPhysicalNumberOfCells() > 0) {
 					CreationHelper helper = row.getSheet().getWorkbook().getCreationHelper();
 					FormulaEvaluator evaluator = helper.createFormulaEvaluator();
 					Iterator<Cell> cells = row.cellIterator();					
