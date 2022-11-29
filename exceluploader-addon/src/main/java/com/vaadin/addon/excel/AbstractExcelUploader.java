@@ -21,23 +21,46 @@ import java.util.*;
 /**
  * Created by basakpie on 2016-10-10.
  */
-@SuppressWarnings({"rawtypes", "unchecked", "unused", "resource"})
+//@SuppressWarnings({"rawtypes", "unchecked", "unused"})
 public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Upload.SucceededListener {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Ext enum
+	 */
 	private Ext ext;
+
+	/**
+	 * File
+	 */
 	private File file;
 
+	/**
+	 * Type
+	 */
 	private final Class<? super T> type;
+	/**
+	 * Fields map
+	 */
 	private final Map<String, Field> fieldMap;
 
 	private int firstRow;
 
+	/**
+	 * sheet at
+	 */
 	private int sheetAt;
 
+	/**
+	 * sheet name
+	 */
 	private String sheetName = "";
 
+	/**
+	 *  Index sheet set
+	 * @param index
+	 */
 	public void setSheetAt(int index) {
 		if(!sheetName.equals("")) {
 			throw new IllegalArgumentException("already defined sheetName (" + sheetName + ")");
@@ -47,6 +70,10 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 		this.sheetAt = index;
 	}
 
+	/**
+	 *
+	 * @param name - sheet name
+	 */
 	public void setSheetName(String name) {
 		if(sheetAt!=0) {
 			throw new IllegalArgumentException("already defined sheetAt (" + sheetAt + ")");
@@ -54,6 +81,10 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 		this.sheetName = name;
 	}
 
+	/**
+	 *
+	 * @param row
+	 */
 	public void setFirstRow(int row) {
 		if(row<0) {
 			throw new IllegalArgumentException("row cannot be negative.");
@@ -62,52 +93,49 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 	}
 
 	private final List<ExcelUploaderSucceededListener<T>> listeners = new ArrayList<ExcelUploaderSucceededListener<T>>();
-	
+
 	public AbstractExcelUploader(Class<? super T> type) {
 		this.type = type;
 		this.fieldMap = new HashMap<>();
 	}
-	
+
 	public void addSucceededListener(ExcelUploaderSucceededListener listener) {
-        listeners.add(listener);
-    }
+		listeners.add(listener);
+	}
 
 	public void removeSucceededListener(ExcelUploaderSucceededListener listener) {
-        listeners.remove(listener);
-    }
-	
-	private void fireUploadSucceededEvent(Upload.SucceededEvent event, List<T> items) {        
-        if (listeners != null) {
-            for(int i =0; i < listeners.size(); i++) {            	
-				ExcelUploaderSucceededListener listener = listeners.get(i);
-                listener.succeededListener(event, items);
-            }
-        }
-    }
-		
-	@Override
-	public OutputStream receiveUpload(String filename, String mimeType) {		
-		FileOutputStream fos = null;        
-        try {
-        	int index = filename.lastIndexOf(".");
-        	ext = Ext.findByExt(filename.substring(index + 1));
-        	if(ext==null) {
-        		throw new IOException("allow extenssion *.xls|xlsx"); 			
-    		}        	
-        	file = File.createTempFile("temp/uploads/excel/" + Long.toString(System.nanoTime()), filename);
-            fos = new FileOutputStream(file);            
-        } catch(IOException ex) {
-        	delete(file);
-        	new Notification("Could not open file<br/>", ex.getMessage(), Notification.Type.ERROR_MESSAGE).show(Page.getCurrent());        	
-        	return null;
-        } 
-        return fos;
+		listeners.remove(listener);
 	}
-	
+
+	private void fireUploadSucceededEvent(Upload.SucceededEvent event, List<T> items) {
+		for (ExcelUploaderSucceededListener<T> listener : listeners) {
+			listener.succeededListener(event, items);
+		}
+	}
+
 	@Override
-	public void uploadSucceeded(SucceededEvent event) {		
+	public OutputStream receiveUpload(String filename, String mimeType) {
+		FileOutputStream fos = null;
+		try {
+			int index = filename.lastIndexOf(".");
+			ext = Ext.findByExt(filename.substring(index + 1));
+			if(ext==null) {
+				throw new IOException("allow extenssion *.xls|xlsx");
+			}
+			file = File.createTempFile("temp/uploads/excel/" + Long.toString(System.nanoTime()), filename);
+			fos = new FileOutputStream(file);
+		} catch(IOException ex) {
+			delete(file);
+			new Notification("Could not open file<br/>", ex.getMessage(), Notification.Type.ERROR_MESSAGE).show(Page.getCurrent());
+			return null;
+		}
+		return fos;
+	}
+
+	@Override
+	public void uploadSucceeded(SucceededEvent event) {
 		List<T> items = new ArrayList<>();
-		try {			
+		try {
 			Class<? extends T> targetClass = (Class<? extends T>) Class.forName(type.getName());
 			registerExcelColumns(targetClass);
 			if(Ext.xls == ext()) {
@@ -116,19 +144,19 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 				items = readXLSXFileToItems(file());
 			}
 			delete(file);
-			fireUploadSucceededEvent(event, items);			
+			fireUploadSucceededEvent(event, items);
 		} catch(IOException e1) {
-        	new Notification("Could not read item<br/>", e1.getMessage(), Notification.Type.ERROR_MESSAGE).show(Page.getCurrent());
-        } catch (ClassNotFoundException e2) {
+			new Notification("Could not read item<br/>", e1.getMessage(), Notification.Type.ERROR_MESSAGE).show(Page.getCurrent());
+		} catch (ClassNotFoundException e2) {
 			new Notification("Class Not Found<br/>", e2.getMessage(), Notification.Type.ERROR_MESSAGE).show(Page.getCurrent());
 		}
 	}
-		
+
 	protected List<T> readXLSFileToItems(File file) throws IOException {
-		List<T> result = new ArrayList<>();  
+		List<T> result = new ArrayList<>();
 		try {
-			FileInputStream fileInputStream = new FileInputStream(file);			
-			
+			FileInputStream fileInputStream = new FileInputStream(file);
+
 			HSSFWorkbook wb = new HSSFWorkbook(fileInputStream);
 			HSSFSheet sheet = wb.getSheetAt(0);
 
@@ -161,25 +189,23 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 				} else {
 					CreationHelper helper = row.getSheet().getWorkbook().getCreationHelper();
 					FormulaEvaluator evaluator = helper.createFormulaEvaluator();
-					Iterator<Cell> cells = row.cellIterator();					
+					Iterator<Cell> cells = row.cellIterator();
 					T item = (T) createItem(propertyNames, cells, evaluator);
-					if(item!=null) {
-						result.add(item);
-					}
+					result.add(item);
 				}
 			}
-			
+
 		} catch (Exception ex) {
 			throw new IOException("readXLSFileToItems error: " + ex.getMessage());
 		}
-		return result;		
+		return result;
 	}
 
 	protected List<T> readXLSXFileToItems(File file) throws IOException {
 		List<T> result = new ArrayList<>();
 		try {
-			FileInputStream fileInputStream = new FileInputStream(file);			
-			
+			FileInputStream fileInputStream = new FileInputStream(file);
+
 			XSSFWorkbook wb = new XSSFWorkbook(fileInputStream);
 
 			XSSFSheet sheet = wb.getSheetAt(0);
@@ -213,21 +239,19 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 				} else {
 					CreationHelper helper = row.getSheet().getWorkbook().getCreationHelper();
 					FormulaEvaluator evaluator = helper.createFormulaEvaluator();
-					Iterator<Cell> cells = row.cellIterator();					
+					Iterator<Cell> cells = row.cellIterator();
 					T item = (T) createItem(propertyNames, cells, evaluator);
-					if(item!=null) {
-						result.add(item);
-					}
-					
+					result.add(item);
+
 				}
 			}
 		} catch (Exception ex) {
 			throw new IOException("readXLSXFileToItems error: " + ex.getMessage());
-		}		
+		}
 		return result;
-		
+
 	}
-	
+
 	private Object createItem(List<String> propertyNames, Iterator cells, FormulaEvaluator evaluator) throws IOException {
 		try {
 			DataFormatter df = new DataFormatter(false);
@@ -266,24 +290,24 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 	protected void setColumnFieldType(Object object, Field field, String columnValue) throws IllegalAccessException {
 		Class<?> fieldType = field.getType();
 		if (fieldType.equals(String.class)) {
-            field.set(object, columnValue);
-        } else	if (fieldType.equals(boolean.class) || fieldType.equals(Boolean.class)) {
-            field.set(object, Boolean.valueOf(columnValue));
-        } else if (fieldType.equals(byte.class) || fieldType.equals(Byte.class)) {
-            field.set(object, Byte.valueOf(columnValue));
-        } else if (fieldType.equals(char.class) || fieldType.equals(Character.class)) {
-            field.set(object, Character.valueOf(columnValue.charAt(0)));
-        } else if (fieldType.equals(double.class) || fieldType.equals(Double.class)) {
-            field.set(object, Double.valueOf(columnValue));
-        } else if (fieldType.equals(float.class) || fieldType.equals(Float.class)) {
-            field.set(object, Float.valueOf(columnValue));
-        } else if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
-            field.set(object, Integer.valueOf(columnValue));
-        } else if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
-            field.set(object, Long.valueOf(columnValue));
-        } else if (fieldType.equals(short.class) || fieldType.equals(Short.class)) {
-            field.set(object, Short.valueOf(columnValue));
-        }
+			field.set(object, columnValue);
+		} else	if (fieldType.equals(boolean.class) || fieldType.equals(Boolean.class)) {
+			field.set(object, Boolean.valueOf(columnValue));
+		} else if (fieldType.equals(byte.class) || fieldType.equals(Byte.class)) {
+			field.set(object, Byte.valueOf(columnValue));
+		} else if (fieldType.equals(char.class) || fieldType.equals(Character.class)) {
+			field.set(object, Character.valueOf(columnValue.charAt(0)));
+		} else if (fieldType.equals(double.class) || fieldType.equals(Double.class)) {
+			field.set(object, Double.valueOf(columnValue));
+		} else if (fieldType.equals(float.class) || fieldType.equals(Float.class)) {
+			field.set(object, Float.valueOf(columnValue));
+		} else if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
+			field.set(object, Integer.valueOf(columnValue));
+		} else if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
+			field.set(object, Long.valueOf(columnValue));
+		} else if (fieldType.equals(short.class) || fieldType.equals(Short.class)) {
+			field.set(object, Short.valueOf(columnValue));
+		}
 	}
 
 	protected abstract Field findColumnField(Class<? extends T> targetClass, String columnName) throws NoSuchFieldException;
@@ -294,22 +318,34 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 	protected File file() {
 		return this.file;
 	}
-	
+
+	/**
+	 * Ext
+	 * @return ext
+	 */
 	private Ext ext() {
 		return this.ext;
 	}
-	
+
+	/**
+	 * Ext enums
+	 */
 	public enum Ext {
 		xls,
-		xlsx;	
-		
-		public static final Ext findByExt(String value) {
-		     for(Ext ext : Ext.values()) {
-		        if(ext.name().equals(value))
-		            return ext ;
-		     }
-		     return null;
-		   }
+		xlsx;
+
+		/**
+		 *
+		 * @param value string
+		 * @return - Ext by string
+		 */
+		public static Ext findByExt(String value) {
+			for(Ext ext : Ext.values()) {
+				if(ext.name().equals(value))
+					return ext ;
+			}
+			return null;
+		}
 	}
 
 	private void delete(File file) {
@@ -325,10 +361,10 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 	protected void registerExcelColumns(Class<?> targetClass) {
 		String className = targetClass.getName();
 		Field[] fields = targetClass.getDeclaredFields();
-		
+
 		Map<String, Field> defaultFieldMap = new HashMap<>();
 		Map<String, Field> annotaionFieldMap = new HashMap<>();
-		
+
 		for(Field field : fields) {
 			ExcelColumn annotation = field.getAnnotation(ExcelColumn.class);
 			String key = field.getName();
@@ -337,8 +373,8 @@ public abstract class AbstractExcelUploader<T> implements Upload.Receiver, Uploa
 				annotaionFieldMap.put(key, field);
 			}
 			defaultFieldMap.put(key, field);
-		}		
-		if(defaultFieldMap.size() > 0 || annotaionFieldMap.size() > 0) {			
+		}
+		if(defaultFieldMap.size() > 0) {
 			if(annotaionFieldMap.size() > 0) {
 				this.fieldMap.putAll(annotaionFieldMap);
 			} else {
