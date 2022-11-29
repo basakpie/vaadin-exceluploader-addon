@@ -10,22 +10,25 @@ public class ExcelUploader<T> extends AbstractExcelUploader {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 *
+	 * @param type upload type
+	 */
 	public ExcelUploader(Class<? extends T> type) {
 		super(type);
 	}
 
 	@Override
-	protected Field findColumnField(Class targetClass, String columnName) throws NoSuchFieldException {
+	protected Field findColumnField(Class targetClass, String columnName) {
 		//Field field = targetClass.getDeclaredField(columnName);
-		Field field = getFieldMap(columnName); // @ExcelColumn or FieldName
-		return field;
+		return getFieldMap(columnName);
 	}
 
 	/**
-	@Override
-	protected void setColumnField(Object object, Field field, String columnValue) throws IllegalAccessException {
+	 @Override
+	 protected void setColumnField(Object object, Field field, String columnValue) throws IllegalAccessException {
 
-	}
-	**/
+	 }
+	 **/
 
 }

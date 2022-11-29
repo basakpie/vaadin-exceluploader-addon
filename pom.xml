@@ -5,7 +5,7 @@
 	<groupId>com.vaadin.addon</groupId>
 	<artifactId>exceluploader-root</artifactId>
 	<packaging>pom</packaging>
-	<version>8.1.0</version>
+	<version>8.2.0</version>
 	<name>Excel Uploader Add-on Root Project</name>
 
 	<prerequisites>
@@ -13,8 +13,8 @@
 	</prerequisites>
 
 	<properties>
-		<vaadin.version>8.0.5</vaadin.version>
-		<vaadin.plugin.version>8.0.5</vaadin.plugin.version>
+		<vaadin.version>8.14.3</vaadin.version>
+		<vaadin.plugin.version>8.14.3</vaadin.plugin.version>
 		<jetty.plugin.version>9.3.9.v20160517</jetty.plugin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -56,7 +56,7 @@
 			<pluginRepositories>
 				<pluginRepository>
 					<id>vaadin-prereleases</id>
-					<url>http://maven.vaadin.com/vaadin-prereleases</url>
+					<url>https://maven.vaadin.com/vaadin-prereleases</url>
 				</pluginRepository>
 				<pluginRepository>
 					<id>vaadin-snapshots</id>
